@@ -1,0 +1,36 @@
+{
+  "Parameters":{},
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression"
+    },
+    "Tasks": {
+      "WriteInformation": "Write-Information"
+    }
+  },
+  "Tasks": {
+    "CheckValue": {
+      "Type": "WriteInformation",
+      "Params": {
+        "MessageData": "[variable('Check.Is64')]"
+      }
+    },
+    "Is32Bit": {
+      "Type": "WriteInformation",
+      "Params": {
+        "MessageData": "This is a 32-bit OS"
+      },
+      "Skip": "[variable('Check.Is64')]"
+    },
+    "Is64Bit": {
+      "Type": "WriteInformation",
+      "Params": {
+        "MessageData": "This is a 64-bit OS"
+      },
+      "Skip": "[not(variable('Check.Is64'))]"
+    }
+  }
+}

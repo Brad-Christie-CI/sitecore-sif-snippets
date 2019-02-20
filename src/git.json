@@ -1,0 +1,76 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "String",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "GitDownload": {
+      "Type": "String",
+      "Description": "Download locations of Git for Windows",
+      "DefaultValue": "https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe"
+    }
+  },
+  "Variables": {
+    "Check.Git": "[GetPackage(Name:'Git` version` *',ErrorAction:'Continue')]",
+
+    "Git.Download": "[JoinPath(variable('Temp.Location'),'git.exe')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadGit": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[parameter('GitDownload')]",
+        "DestinationPath": "[variable('Git.Download')]"
+      },
+      "Skip": "[variable('Check.Git')]"
+    },
+    "InstallGit": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('Git.Download')]",
+        "ArgumentList": [
+          "/VERYSILENT",
+          "/SUPPRESSMSGBOXES",
+          "/NORESTART",
+          "/NOCANCEL",
+          "/SP-",
+          "/LOG"
+        ],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.Git')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('Git.Download')]"
+        ]
+      }
+    }
+  }
+}

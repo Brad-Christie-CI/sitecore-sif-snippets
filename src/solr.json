@@ -1,0 +1,426 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "String",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "JavaRuntimeEnvDownload": {
+      "Type": "String",
+      "Description": "Download location of Java Runtime Environment (1.8.x)",
+      "DefaultValue": "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=235727_2787e4a523244c269598db4e85c51e0c"
+    },
+    "NssmVersion": {
+      "Type": "String",
+      "Description": "Version of Non-Sucking Service Manager",
+      "DefaultValue": "SIF-Default"
+    },
+    "SolrVersion": {
+      "Type": "String",
+      "Description": "Version of Apache SOLR to install",
+      "DefaultValue": "SIF-Default"
+    },
+    "SolrPort": {
+      "Type": "String",
+      "Description": "Port to run SOLR service on",
+      "DefaultValue": "SIF-Default"
+    },
+    "SolrHostname": {
+      "Type": "String",
+      "Description": "Hostname to bind to SOLR",
+      "DefaultValue": "SIF-Default"
+    },
+    "SolrServiceName": {
+      "Type": "String",
+      "Description": "Name of the SOLR service",
+      "DefaultValue": "SIF-Default"
+    }
+  },
+  "Variables": {
+    "Check.JavaRuntimeEnv": "[GetPackage(Name:variable('JavaRuntimeEnv.NamePattern'),ErrorAction:'Continue')]",
+    "Check.Nssm": "[TestPath(variable('Nssm.Location'))]",
+    "Check.Solr": "[TestPath(variable('Solr.Location'))]",
+    "Check.SolrService": "[GetService(Name:variable('Solr.ServiceName'),ErrorAction:'Continue')]",
+
+    "Nssm.Uri": "[concat('https://nssm.cc/release/nssm-',variable('Nssm.Version'),'.zip')]",
+    "Solr.Uri": "[concat('https://archive.apache.org/dist/lucene/solr/',variable('Solr.Version'),'/solr-',variable('Solr.Version'),'.zip')]",
+
+    "JavaRuntimeEnv.Download": "[JoinPath(variable('Temp.Location'),'jre-windows.exe')]",
+    "Nssm.Download": "[JoinPath(variable('Temp.Location'),concat('nssm-',variable('Nssm.Version'),'.zip'))]",
+    "Solr.Download": "[JoinPath(variable('Temp.Location'),concat('solr-',variable('Solr.Version'),'.zip'))]",
+
+    "Nssm.Location": "[JoinPath(Environment('ProgramData'),concat('nssm-',variable('Nssm.Version')))]",
+    "Solr.Location": "[JoinPath(Environment('ProgramData'),concat('solr-',variable('Solr.Version')))]",
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Nssm.Version": "[equal(parameter('NssmVersion'),'SIF-Default')]",
+    "Test.Solr.Hostname": "[equal(parameter('SolrHostname'),'SIF-Default')]",
+    "Test.Solr.Port": "[equal(parameter('SolrPort'),'SIF-Default')]",
+    "Test.Solr.ServiceName": "[equal(parameter('SolrServiceName'),'SIF-Default')]",
+    "Test.Solr.Version": "[equal(parameter('SolrVersion'),'SIF-Default')]",
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]",
+
+    "JavaRuntimeEnv.NamePattern": "Java 8 Update *",
+    "JavaRuntimeEnv.PackageName": "[SelectObject(InputObject:GetPackage(Name:variable('JavaRuntimeEnv.NamePattern'),ErrorAction:'Continue'),ExpandProperty:'Name')]",
+
+    "Nssm.Command": "[JoinPath(variable('Nssm.Location'),'win64','nssm.exe')]",
+    "Nssm.Service.Command.Solr": "[JoinPath(variable('Solr.Location'),'bin','solr.cmd')]",
+    "Nssm.Service.Command.Start": "[concat('\"',variable('Nssm.Service.Command.Solr'),'\" start -port ',variable('Solr.Port'),' -foreground -verbose')]",
+    "Nssm.Service.Command": "[concat('/C ',variable('Nssm.Service.Command.Start'),' < nul')]",
+    "Nssm.Version": "[if(variable('Test.Nssm.Version'),'2.24',parameter('NssmVersion'))]",
+    
+    "Solr.Cert.Location": "[JoinPath(variable('Solr.Location'),'server','etc')]",
+    "Solr.Cert.Name": "[concat(variable('Solr.Hostname'),'-https')]",
+    "Solr.Cert.Name.Root": "[concat('DO_NOT_TRUST_',variable('Solr.Hostname'))]",
+    "Solr.Cert.Password": "secret",
+    "Solr.Cert.SecurePassword": "[ConvertToSecureString(String:variable('Solr.Cert.Password'),AsPlainText:true,Force:true)]",
+    "Solr.Version": "[if(variable('Test.Solr.Version'),'7.2.1',parameter('SolrVersion'))]",
+    "Solr.Command": "[JoinPath(variable('Solr.Location'),'bin','solr.in.cmd')]",
+    "Solr.Command.Backup": "[JoinPath(variable('Solr.Location'),'bin','solr.in.cmd.original')]",
+    "Solr.Hostname": "[if(variable('Test.Solr.Hostname'),'solr',parameter('SolrHostname'))]",
+    "Solr.LogDirectory": "[JoinPath(variable('Solr.Location'),'server','logs')]",
+    "Solr.Port": "[if(variable('Test.Solr.Port'),'8983',parameter('SolrPort'))]",
+    "Solr.ServiceName": "[if(variable('Test.Solr.ServiceName'),concat('solr-',variable('Solr.Version')),parameter('SolrServiceName'))]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "ConvertToSecureString": "ConvertTo-SecureString",
+      "GetPackage": "Get-Package",
+      "GetService": "Get-Service",
+      "SelectObject": "Select-Object",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "AddContent": "Add-Content",
+      "NewItem": "New-Item",
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package",
+      "WriteInformation": "Write-Information"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+    
+    "DownloadJavaRuntimeEnv": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[parameter('JavaRuntimeEnvDownload')]",
+        "DestinationPath": "[variable('JavaRuntimeEnv.Download')]"
+      },
+      "Skip": "[variable('Check.JavaRuntimeEnv')]"
+    },
+    "InstallJavaRuntimeEnv": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('JavaRuntimeEnv.Download')]",
+        "ArgumentList": [
+          "/s",
+          "AUTO_UPDATE=Disable",
+          "REBOOT=Disable",
+          "WEB_JAVA=Disable",
+          "WEB_ANALYTICS=Disable"
+        ],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.JavaRuntimeEnv')]"
+    },
+
+    "DownloadNssm": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('Nssm.Uri')]",
+        "DestinationPath": "[variable('Nssm.Download')]"
+      },
+      "Skip": "[variable('Check.Nssm')]"
+    },
+    "ExtractNssm": {
+      "Type": "Unpack",
+      "Params": {
+        "Source": "[variable('Nssm.Download')]",
+        "Destination": "[Environment('ProgramData')]"
+      },
+      "Skip": "[variable('Check.Nssm')]"
+    },
+
+    "DownloadSolr": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('Solr.Uri')]",
+        "Destination": "[variable('Solr.Download')]"
+      },
+      "Skip": "[variable('Check.Solr')]"
+    },
+    "ExtractSolr": {
+      "Type": "Unpack",
+      "Params": {
+        "Source": "[variable('Solr.Download')]",
+        "Destination": "[Environment('ProgramData')]"
+      },
+      "Skip": "[variable('Check.Solr')]"
+    },
+    "StopSolrService": {
+      "Type": "ManageService",
+      "Params": {
+        "Name": "[variable('Solr.ServiceName')]",
+        "Status": "Stopped",
+        "PostDelay": 1000
+      }
+    },
+    "BackupSolrConfig": {
+      "Type": "Copy",
+      "Params": {
+        "Source": "[variable('Solr.Command')]",
+        "Destination": "[variable('Solr.Command.Backup')]"
+      },
+      "Skip": "[TestPath(variable('Solr.Command.Backup'))]"
+    },
+    "ShowSolrCertPassword": {
+      "Type": "WriteInformation",
+      "Params": {
+        "MessageData": "[concat('SOLR cert password: ',variable('Solr.Cert.Password'))]",
+        "InformationAction": "Continue"
+      },
+      "Skip": "[equal(variable('Solr.Cert.Password'),'secret')]"
+    },
+    "CreateRootSolrCert": {
+      "Type": "NewRootCertificate",
+      "Params": {
+        "Path": "[variable('Solr.Cert.Location')]",
+        "Name": "[variable('Solr.Cert.Name.Root')]",
+        "DnsName": ["[variable('Solr.Cert.Name.Root')]", "127.0.0.1"],
+        "IncludePrivateKey": true,
+        "Password": "[variable('Solr.Cert.SecurePassword')]"
+      }
+    },
+    "CreateSignedSolrCert": {
+      "Type": "NewSignedCertificate",
+      "Params": {
+        "Signer": "[GetCertificate(variable('Solr.Cert.Name.Root'), 'Cert:\\LocalMachine\\Root')]",
+        "Path": "[variable('Solr.Cert.Location')]",
+        "Name": "[variable('Solr.Cert.Name')]",
+        "DnsName": ["[variable('Solr.Hostname')]","localhost","127.0.0.1"],
+        "IncludePrivateKey": true,
+        "Password": "[variable('Solr.Cert.SecurePassword')]"
+      }
+    },
+    "RestoreSolrCommandFromBackup": {
+      "Type": "Copy",
+      "Params": {
+        "Source": "[variable('Solr.Command.Backup')]",
+        "Destination": "[variable('Solr.Command')]"
+      }
+    },
+    "WriteSolrCommandFile": {
+      "Type": "AddContent",
+      "Params": [
+        {
+          "Value": "[concat('set SOLR_HOST=',variable('Solr.Cert.Name'))]",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "[concat('set SOLR_PORT=',variable('Solr.Port'))]",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "[concat('set SOLR_SSL_KEY_STORE=etc/',variable('Solr.Cert.Name'),'.pfx')]",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "[concat('set SOLR_SSL_KEY_STORE_PASSWORD=',variable('Solr.Cert.Password'))]",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "set SOLR_SSL_KEY_STORE_TYPE=PKCS12",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "[concat('set SOLR_SSL_TRUST_STORE=etc/',variable('Solr.Cert.Name'),'.pfx')]",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "[concat('set SOLR_SSL_TRUST_STORE_PASSWORD=',variable('Solr.Cert.Password'))]",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "set SOLR_SSL_TRUST_STORE_TYPE=PKCS12",
+          "LiteralPath": "[variable('Solr.Command')]"
+        },
+        {
+          "Value": "set SOLR_OPTS=%SOLR_OPTS% -Dsolr.log.muteconsole",
+          "LiteralPath": "[variable('Solr.Command')]"
+        }
+      ]
+    },
+    "CreateSolrServiceLogDirectory": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": [
+          "[variable('Solr.LogDirectory')]"
+        ]
+      }
+    },
+    "RegisterSolrService": {
+      "Type": "Command",
+      "Params": {
+        "Path": "[variable('Nssm.Command')]",
+        "Arguments": [
+          "install",
+          "[variable('Solr.ServiceName')]",
+          "cmd.exe",
+          "[variable('Nssm.Service.Command')]"
+        ]
+      },
+      "Skip": "[variable('Check.SolrService')]"
+    },
+    "ConfigureSolrService": {
+      "Type": "Command",
+      "Params": [
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "DisplayName",
+            "[concat('Apache Solr v',variable('Solr.Version'))]"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "DisplayName",
+            "[concat('Apache Solr v',variable('Solr.Version'))]"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "Description",
+            "[concat('https://',variable('Solr.Hostname'),':',variable('Solr.Port'),'/solr/#')]"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "AppExit",
+            "Default",
+            "Exit"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "AppStdoutCreationDisposition",
+            "2"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "AppStderrCreationDisposition",
+            "2"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "AppStdout",
+            "[JoinPath(variable('Solr.LogDirectory'),'nssm.log')]"
+          ]
+        },
+        {
+          "Path": "[variable('Nssm.Command')]",
+          "Arguments": [
+            "set",
+            "[variable('Solr.ServiceName')]",
+            "AppStderr",
+            "[JoinPath(variable('Solr.LogDirectory'),'nssm.log')]"
+          ]
+        }
+      ]
+    },
+    "StartSolrService": {
+      "Type": "ManageService",
+      "Params": {
+        "Name": "[variable('Solr.ServiceName')]",
+        "Status": "Running",
+        "PostDelay": 8000
+      }
+    },
+
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('JavaRuntimeEnv.Download')]",
+          "[JoinPath(Environment('TEMP'),'JavaDeployReg.log')]",
+          "[JoinPath(Environment('TEMP'),'jawshtml.html')]",
+          "[JoinPath(Environment('TEMP'),'jusched.log')]",
+          "[variable('Nssm.Download')]",
+          "[variable('Solr.Download')]"
+        ]
+      }
+    }
+  },
+  "UninstallTasks": {
+    "StopSolrService": {
+      "Type": "ManageService",
+      "Params": {
+        "Name": "[variable('Solr.ServiceName')]",
+        "Status": "Stopped",
+        "PostDelay": 1000
+      }
+    },
+    "RemoveSolrService": {
+      "Type": "Command",
+      "Params": {
+        "Path": "[variable('Nssm.Command')]",
+        "Arguments": [
+          "remove",
+          "[variable('Solr.ServiceName')]",
+          "confirm"
+        ],
+        "ErrorAction": "SilentlyContinue"
+      }
+    },
+    "ShowJavaPackageName": {
+      "Type": "WriteInformation",
+      "Params": {
+        "MessageData": "[variable('JavaRuntimeEnv.PackageName')]"
+      }
+    },
+    "UninstallJavaRuntimeEnv": {
+      "Type": "UninstallPackage",
+      "Params": {
+        "Name": "[variable('JavaRuntimeEnv.PackageName')]",
+        "ErrorAction": "SilentlyContinue"
+      }
+    },
+    "RemovePaths": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": ["[variable('Solr.Location')]", "[variable('Nssm.Location')]"],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

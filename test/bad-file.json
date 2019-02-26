@@ -1,0 +1,67 @@
+{
+  "Parameters": {
+    "": {
+      "Type": "bool",
+      "Description": "Must not be empty."
+    },
+    "0DarkThirty": {
+      "Type": "string",
+      "description": "Must start with a letter."
+    },
+    "Foo": {
+      "Description": "Must contain a 'Type'."
+    },
+    "Bar": {
+      "Type": "string",
+      "Description": "This is a description.",
+      "DefaultValue": "SIF-Default",
+      "Validation": ""
+    }
+  },
+  "Variables": {
+    "foo bar": "Cannot contain spaces",
+    "foo.bar": "[ConfigTask(parameter('Bar')]"
+  },
+  "Modules": [
+    "./Collection.ps1",
+    "./Of.ps1",
+    "Modules"
+  ],
+  "Register": {
+    "ConfigFunction": {
+    },
+    "Tasks": {
+      "foo bar": "Invalid",
+      "foobar": "",
+      "foobarbaz": "Foo-BarBaz"
+    }
+  },
+  "Tasks": {
+    "BogusTask": {},
+    "InvalidTypeTask": {
+      "Type": 123
+    },
+    "InvalidParamsTask": {
+      "Type": "TaskType",
+      "Params": false
+    },
+    "InvalidSkipTask": {
+      "Type": "TaskType",
+      "Skip": 123
+    },
+    "InvalidParamsTask": {
+      "Type": "TaskType",
+      "Params": false
+    },
+    "SimpleTask": {
+      "Type": "TaskType",
+      "Params": { "Foo": "foo", "Bar": "bar" },
+      "Skip": false
+    },
+    "MultiTask": {
+      "Type": "TaskType",
+      "Params": [],
+      "Skip": "[variable('Check.ForSkip')]"
+    }
+  }
+}

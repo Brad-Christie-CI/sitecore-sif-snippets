@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://sitecore.com/sif-shema.json",
+  "$id": "http://sitecore.com/sif-schema.json",
   "title": "SitecoreInstallFramework-2.0.0",
   "type": "object",
   "properties": {

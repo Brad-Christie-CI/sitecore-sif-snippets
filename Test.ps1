@@ -16,7 +16,7 @@ Process {
     $InstallParameters = @("-Path", $Target)
     $Dockerfile = @"
 # escape=``
-FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore-1803
+FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore
 SHELL ["powershell.exe", "-Command", "`$ErrorActionPreference='Stop';`$ProgressPreference='SilentlyContinue';"]
 
 # Update NuGet & Install SIF

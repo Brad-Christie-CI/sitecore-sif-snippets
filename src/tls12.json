@@ -18,48 +18,54 @@
   "Register": {
     "ConfigFunction": {
       "Eval": "Invoke-Expression"
-    },
-  }
+    }
+  },
   "Tasks": {
-    "EnableTls12": {
+    "EnableTls12x86": {
       "Type": "Command",
-      "Params": [
-        // Activate for future sessions
-        {
-          "Path": "reg.exe",
-          "Arguments": [
-            "add", "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
-            "/v", "SchUseStrongCrypto",
-            "/t", "REG_DWORD",
-            "/d", "1",
-            "/f",
-            "/reg:32"
-          ]
-        },
-        {
-          "Path": "reg.exe",
-          "Arguments": [
-            "add", "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
-            "/v", "SchUseStrongCrypto",
-            "/t", "REG_DWORD",
-            "/d", "1",
-            "/f",
-            "/reg:64"
-          ],
-          "Skip": "[not(variable('Check.Is64'))]"
-        },
+      "Skip": "[variable('Check.Is64')]",
+      "Params": {
+        // Activate for future sessions (x86)
+        "Path": "reg.exe",
+        "Arguments": [
+          "add", "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+          "/v", "SchUseStrongCrypto",
+          "/t", "REG_DWORD",
+          "/d", "1",
+          "/f",
+          "/reg:32"
+        ]
+      }
+    },
+    "EnableTls12x64": {
+      "Type": "Command",
+      "Skip": "[not(variable('Check.Is64'))]",
+      "Params": {
+        // Activate for future sessions (x64)
+        "Path": "reg.exe",
+        "Arguments": [
+          "add", "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+          "/v", "SchUseStrongCrypto",
+          "/t", "REG_DWORD",
+          "/d", "1",
+          "/f",
+          "/reg:64"
+        ]
+      }
+    },
+    "EnableTls12CurrentSession": {
+      "Type": "Command",
+      "Params": {
         // Active for current session as well.
-        {
-          "Path": "powershell.exe",
-          "Arguments": [
-            "-NoLogo",
-            "-NonInteractive",
-            "-NoProfile",
-            "-Command",
-            "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 }"
-          ]
-        }
-      ]
+        "Path": "powershell.exe",
+        "Arguments": [
+          "-NoLogo",
+          "-NonInteractive",
+          "-NoProfile",
+          "-Command",
+          "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 }"
+        ]
+      }
     }
   }
 }

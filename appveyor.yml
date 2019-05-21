@@ -1,0 +1,15 @@
+version: 1.0.{build}
+image: Visual Studio 2017
+
+install:
+  - ps: Write-Host Server version $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').BuildLabEx
+  - cmd: docker version
+build_script:
+  - ps: .\Test.ps1
+after_build:
+  - docker images
+
+notifications:
+  - provider: Slack
+    incoming_webhook:
+      secure: 6xD2ujsiPvtwxG7+lDge0d8+J7sJQjXcNZbUe2aiz7jOl1mSPDUPsISWu7mOYV9KB81PFyawE+csJ0H8j6sixUbc3j9CLK9bU9++I9J5S0E=

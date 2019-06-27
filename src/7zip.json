@@ -70,7 +70,9 @@
       "Params": {
         "LiteralPath": [
           "[variable('SevenZip.Download')]"
-        ]
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
       }
     }
   }

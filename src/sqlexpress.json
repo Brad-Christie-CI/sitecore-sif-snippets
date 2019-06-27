@@ -179,7 +179,8 @@
           "[JoinPath(Environment('TEMP'),'SqlSetup.log')]",
           "[variable('SqlExpress.Location')]"
         ],
-        "Recurse": true
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
       }
     }
   },

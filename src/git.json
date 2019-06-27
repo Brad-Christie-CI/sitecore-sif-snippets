@@ -69,7 +69,9 @@
       "Params": {
         "LiteralPath": [
           "[variable('Git.Download')]"
-        ]
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
       }
     }
   }

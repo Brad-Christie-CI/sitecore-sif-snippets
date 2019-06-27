@@ -376,7 +376,9 @@
           "[JoinPath(Environment('TEMP'),'jusched.log')]",
           "[variable('Nssm.Download')]",
           "[variable('Solr.Download')]"
-        ]
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
       }
     }
   },

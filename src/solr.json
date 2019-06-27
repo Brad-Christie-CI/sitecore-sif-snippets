@@ -114,7 +114,7 @@
         "SourceUri": "[parameter('JavaRuntimeEnvDownload')]",
         "DestinationPath": "[variable('JavaRuntimeEnv.Download')]"
       },
-      "Skip": "[variable('Check.JavaRuntimeEnv')]"
+      "Skip": "[or(variable('Check.JavaRuntimeEnv'),variable('JavaRuntimeEnv.Download'))]"
     },
     "InstallJavaRuntimeEnv": {
       "Type": "StartProcess",
@@ -138,7 +138,7 @@
         "SourceUri": "[variable('Nssm.Uri')]",
         "DestinationPath": "[variable('Nssm.Download')]"
       },
-      "Skip": "[variable('Check.Nssm')]"
+      "Skip": "[or(variable('Check.Nssm'),variable('Nssm.Download'))]"
     },
     "ExtractNssm": {
       "Type": "Unpack",
@@ -155,7 +155,7 @@
         "SourceUri": "[variable('Solr.Uri')]",
         "Destination": "[variable('Solr.Download')]"
       },
-      "Skip": "[variable('Check.Solr')]"
+      "Skip": "[or(variable('Check.Solr'),variable('Solr.Download'))]"
     },
     "ExtractSolr": {
       "Type": "Unpack",

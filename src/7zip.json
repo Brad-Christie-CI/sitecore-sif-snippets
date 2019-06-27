@@ -54,7 +54,7 @@
         "SourceUri": "[variable('SevenZip.SourceUri')]",
         "DestinationPath": "[variable('SevenZip.Download')]"
       },
-      "Skip": "[or(variable('Check.SevenZip'),variable('SevenZip.Download'))]"
+      "Skip": "[or(variable('Check.SevenZip'),TestPath(variable('SevenZip.Download')))]"
     },
     "InstallSevenZip": {
       "Type": "StartProcess",

@@ -68,7 +68,7 @@
         "SourceUri": "[parameter('SqlExpressDownload')]",
         "DestinationPath": "[variable('SqlExpress.Download')]"
       },
-      "Skip": "[or(variable('Check.SqlExpress'),variable('SqlExpress.Download'))]"
+      "Skip": "[or(variable('Check.SqlExpress'),TestPath(variable('SqlExpress.Download')))]"
     },
     "ExtractInstaller": {
       "Type": "StartProcess",

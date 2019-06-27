@@ -46,7 +46,7 @@
         "SourceUri": "[parameter('GitDownload')]",
         "DestinationPath": "[variable('Git.Download')]"
       },
-      "Skip": "[or(variable('Check.Git'),variable('Git.Download'))]"
+      "Skip": "[or(variable('Check.Git'),TestPath(variable('Git.Download')))]"
     },
     "InstallGit": {
       "Type": "StartProcess",

@@ -87,7 +87,17 @@
     "params": {
       "patternProperties": {
         "^[a-zA-Z][\\w-]*$": {
-          "type": ["string","boolean","integer","number"]
+          "oneOf": [
+            {
+              "type": ["string","boolean","integer","number"]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         }
       },
       "additionalProperties": false,

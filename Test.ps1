@@ -14,6 +14,9 @@ Process {
   Get-ChildItem "${PSScriptRoot}\src\" -Include $Filter -Recurse | ForEach-Object {
     $Target = $_.FullName.Replace($PSScriptRoot, ".")
     $InstallParameters = @("-Path", $Target)
+    If ($PSBoundParameters.ContainsKey("Verbose")) {
+      $InstallParameters += "-Verbose"
+    }
     $Dockerfile = @"
 # escape=``
 FROM mcr.microsoft.com/windows/servercore/iis:windowsservercore

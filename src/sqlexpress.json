@@ -23,7 +23,7 @@
     "Note.SqlExpress2017": "http://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SQLEXPR_X64_ENU.EXE",
     "Note.SqlExpress2016": "https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SQLEXPR_x64_ENU.exe",
 
-    "Check.SqlExpress": "[GetPackage(Name:variable('SqlExpress.NamePattern'),ErrorAction:'Continue')]",
+    "Check.SqlExpress": "[ValidateNotNull(GetPackage(Name:variable('SqlExpress.NamePattern'),ErrorAction:'Continue'))]",
     
     "SqlExpress.Download": "[JoinPath(variable('Temp.Location'),'sqlexpress.exe')]",
 
@@ -80,7 +80,7 @@
         ],
         "Wait": true
       },
-      "Skip": "[variable('Check.SqlExpress')]"
+      "Skip": "[or(variable('Check.SqlExpress'),TestPath(variable('SqlExpress.Location')))]"
     },
     "InstallSqlExpress": {
       "Type": "Command",
@@ -174,10 +174,10 @@
       "Type": "RemoveItem",
       "Params": {
         "LiteralPath": [
+          "[variable('SqlExpress.Location')]",
           "[variable('SqlExpress.Download')]",
           "[JoinPath(Environment('TEMP'),'sqlexpress_decompression_log.txt')]",
-          "[JoinPath(Environment('TEMP'),'SqlSetup.log')]",
-          "[variable('SqlExpress.Location')]"
+          "[JoinPath(Environment('TEMP'),'SqlSetup.log')]"
         ],
         "Recurse": true,
         "ErrorAction": "SilentlyContinue"

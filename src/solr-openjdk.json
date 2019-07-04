@@ -46,7 +46,7 @@
     "Check.OpenJDK": "[TestPath(variable('OpenJDK.Location'))]",
     "Check.Nssm": "[TestPath(variable('Nssm.Location'))]",
     "Check.Solr": "[TestPath(variable('Solr.Location'))]",
-    "Check.SolrService": "[GetService(Name:variable('Solr.ServiceName'),ErrorAction:'SilentlyContinue')]",
+    "Check.SolrService": "[ValidateNotNull(GetService(Name:variable('Solr.ServiceName'),ErrorAction:'SilentlyContinue'))]",
 
     "Nssm.Uri": "[concat('https://nssm.cc/release/nssm-',variable('Nssm.Version'),'.zip')]",
     "Solr.Uri": "[concat('https://archive.apache.org/dist/lucene/solr/',variable('Solr.Version'),'/solr-',variable('Solr.Version'),'.zip')]",

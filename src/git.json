@@ -13,7 +13,7 @@
     }
   },
   "Variables": {
-    "Check.Git": "[GetPackage(Name:'Git` version` *',ErrorAction:'Continue')]",
+    "Check.Git": "[ValidateNotNull(GetPackage(Name:'Git` version` *',ErrorAction:'Continue'))]",
 
     "Git.Download": "[JoinPath(variable('Temp.Location'),'git.exe')]",
 

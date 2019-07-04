@@ -38,10 +38,10 @@
     }
   },
   "Variables": {
-    "Check.JavaRuntimeEnv": "[GetPackage(Name:variable('JavaRuntimeEnv.NamePattern'),ErrorAction:'Continue')]",
+    "Check.JavaRuntimeEnv": "[ValidateNotNull(GetPackage(Name:variable('JavaRuntimeEnv.NamePattern'),ErrorAction:'Continue'))]",
     "Check.Nssm": "[TestPath(variable('Nssm.Location'))]",
     "Check.Solr": "[TestPath(variable('Solr.Location'))]",
-    "Check.SolrService": "[GetService(Name:variable('Solr.ServiceName'),ErrorAction:'Continue')]",
+    "Check.SolrService": "[ValidateNotNull(GetService(Name:variable('Solr.ServiceName'),ErrorAction:'Continue'))]",
 
     "Nssm.Uri": "[concat('https://nssm.cc/release/nssm-',variable('Nssm.Version'),'.zip')]",
     "Solr.Uri": "[concat('https://archive.apache.org/dist/lucene/solr/',variable('Solr.Version'),'/solr-',variable('Solr.Version'),'.zip')]",

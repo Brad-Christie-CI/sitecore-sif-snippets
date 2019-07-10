@@ -10,4 +10,6 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::Sec
 FROM build as test
 SHELL ["powershell.exe", "-Command", "$ErrorActionPreference='Stop';"]
 RUN Get-Service 'solr-7.3.1' ; `
+    # just needs a little break starting up
+    Start-Sleep 5 ; `
     Invoke-WebRequest 'https://localhost:8983/solr/' -UseBasicParsing | Select-Object 'StatusCode', 'StatusDescription'

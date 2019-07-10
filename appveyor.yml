@@ -5,7 +5,7 @@ install:
   - ps: Write-Host Server version $(Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').BuildLabEx
   - cmd: docker version
 build_script:
-  - ps: .\Build.ps1 -Verbose
+  - ps: .\Build.ps1 -BaseImage "microsoft/windowsservercore@sha256:c06b4bfaf634215ea194e6005450740f3a230b27c510cf8facab1e9c678f3a99" -Verbose
 after_build:
   - docker images
 

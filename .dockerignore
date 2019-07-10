@@ -1,0 +1,8 @@
+.git/
+.vscode/
+schema/
+
+Dockerfile
+LICENSE
+README.md
+Test.ps1

@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://sitecore.com/sif-schema.json",
+  "title": "SitecoreInstallFramework-2.0.0",
+  "type": "object",
+  "properties": {
+    "Modules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Parameters": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zAA-Z]([a-zA-Z0-9:]+)?$": {
+          "type": "object",
+          "oneOf": [
+            { "$ref": "#/definitions/parameter" }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "Register": {
+      "properties": {
+        "ConfigFunction": {
+          "type": "object",
+          "patternProperties": {
+            "^[\\w]+$": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][\\w-]*$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Tasks": {
+          "type": "object",
+          "patternProperties": {
+            "^[\\w]+$": {
+              "type": "string",
+              "pattern": "^[a-zA-Z][\\w-]*$"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "Tasks": {
+      "patternProperties": {
+        "^[a-zAA-Z]([a-zA-Z0-9:]+)?$": {
+          "type": "object",
+          "oneOf": [
+            { "$ref": "#/definitions/task" }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "UninstallTasks": {
+      "patternProperties": {
+        "^[a-zAA-Z]([a-zA-Z0-9:]+)?$": {
+          "type": "object",
+          "oneOf": [
+            { "$ref": "#/definitions/task" }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Variables": {
+      "type": "object",
+      "patternProperties": {
+        "^[\\w\\.-]+$": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": ["Tasks"],
+  "definitions": {
+    "params": {
+      "patternProperties": {
+        "^[a-zA-Z][\\w-]*$": {
+          "oneOf": [
+            {
+              "type": ["string","boolean","integer","number"]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "parameter": {
+      "properties": {
+        "Type": {
+          "type": "string",
+          "enum": ["string","char","byte","int","long","bool","decimal","single","double","datetime"]
+        },
+        "Description": {
+          "type": "string"
+        },
+        "DefaultValue": {
+          "type": ["string","boolean","integer","number"]
+        },
+        "Validation": {
+          "type": "string",
+          "examples": [
+            "[ValidateNotNullOrEmpty($_)]",
+            "[ValidateRange(1,255,$_)]"
+          ]
+        }
+      },
+      "required": ["Type"]
+    },
+    "task": {
+      "properties": {
+        "Check": {
+          "type": "string"
+        },
+        "Params": {
+          "type": ["object","array"],
+          "oneOf": [
+            { "$ref": "#/definitions/params" },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "oneOf": [
+                  { "$ref": "#/definitions/params" }
+                ]
+              }
+            }
+          ]
+        },
+        "Skip": {
+          "type": ["boolean","string"],
+          "oneOf": [
+            { "type": "boolean" },
+            { "type": "string" }
+          ]
+        },
+        "Type": {
+          "type": "string"
+        }
+      },
+      "required": ["Type"]
+    }
+  }
+}

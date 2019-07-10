@@ -1,0 +1,86 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "GitDownload": {
+      "Type": "string",
+      "Description": "Download locations of Git for Windows (x86)",
+      "DefaultValue": "https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-32-bit.exe"
+    },
+    "Git64Download": {
+      "Type": "string",
+      "Description": "Download locations of Git for Windows (x64)",
+      "DefaultValue": "https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/Git-2.20.1-64-bit.exe"
+    }
+  },
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
+    "Check.Git": "[ValidateNotNull(GetPackage(Name:'Git` version` *',ErrorAction:'Continue'))]",
+
+    "Git.SourceUri": "[if(variable('Check.Is64'),parameter('Git64Download'),parameter('GitDownload'))]",
+    "Git.Download": "[JoinPath(variable('Temp.Location'),'git.exe')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression",
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadGit": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('Git.SourceUri')]",
+        "DestinationPath": "[variable('Git.Download')]"
+      },
+      "Skip": "[or(variable('Check.Git'),TestPath(variable('Git.Download')))]"
+    },
+    "InstallGit": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('Git.Download')]",
+        "ArgumentList": [
+          "/VERYSILENT",
+          "/SUPPRESSMSGBOXES",
+          "/NORESTART",
+          "/NOCANCEL",
+          "/SP-",
+          "/LOG"
+        ],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.Git')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('Git.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

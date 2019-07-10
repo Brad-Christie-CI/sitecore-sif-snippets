@@ -1,0 +1,11 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "/src/*.json",
+        "/test/*.json"
+      ],
+      "url": "./schema/sif-schema.json"
+    }
+  ]
+}

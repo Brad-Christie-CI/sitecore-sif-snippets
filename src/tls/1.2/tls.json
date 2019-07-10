@@ -1,0 +1,71 @@
+{
+  // Requires SIF v2.0+
+  // Summary
+  //  Enabled TLS 1.2 on secure connections.
+  // Problem:
+  //   The request was aborted: Could not create SSL/TLS secure channel.
+  // Solution:
+  //    Set [Net.ServicePointManager]::SecurityProtocol (however this only lasts as
+  //      long as PS session lasts (e.g. one docker RUN line))
+  //    Enable at registry level (lasts until it's changed again).
+  //      http://msdn.microsoft.com/en-us/library/windows/desktop/aa379810(v=vs.85).aspx
+  
+  "Parameters": {},
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]"
+  },
+  "Modules": [],
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression"
+    }
+  },
+  "Tasks": {
+    "EnableTls12x86": {
+      "Type": "Command",
+      "Skip": "[variable('Check.Is64')]",
+      "Params": {
+        // Activate for future sessions (x86)
+        "Path": "reg.exe",
+        "Arguments": [
+          "add", "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+          "/v", "SchUseStrongCrypto",
+          "/t", "REG_DWORD",
+          "/d", "1",
+          "/f",
+          "/reg:32"
+        ]
+      }
+    },
+    "EnableTls12x64": {
+      "Type": "Command",
+      "Skip": "[not(variable('Check.Is64'))]",
+      "Params": {
+        // Activate for future sessions (x64)
+        "Path": "reg.exe",
+        "Arguments": [
+          "add", "HKLM\\SOFTWARE\\Microsoft\\.NETFramework\\v4.0.30319",
+          "/v", "SchUseStrongCrypto",
+          "/t", "REG_DWORD",
+          "/d", "1",
+          "/f",
+          "/reg:64"
+        ]
+      }
+    },
+    "EnableTls12CurrentSession": {
+      "Type": "Command",
+      "Params": {
+        // Active for current session as well.
+        "Path": "powershell.exe",
+        "Arguments": [
+          "-NoLogo",
+          "-NonInteractive",
+          "-NoProfile",
+          "-Command",
+          "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 }"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "ChromeDownload": {
+      "Type": "string",
+      "Description": "Download location of chrome",
+      "DefaultValue": "http://dl.google.com/chrome/install/latest/chrome_installer.exe"
+    }
+  },
+  "Variables": {
+    "Check.Chrome": "[ValidateNotNull(GetPackage(Name:'Google` Chrome',ErrorAction:'Continue'))]",
+
+    "Chrome.SourceUri": "[parameter('ChromeDownload')]",
+    "Chrome.Download": "[JoinPath(variable('Temp.Location'),'chrome.exe')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadChrome": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('Chrome.SourceUri')]",
+        "DestinationPath": "[variable('Chrome.Download')]"
+      },
+      "Skip": "[or(variable('Check.Chrome'),TestPath(variable('Chrome.Download')))]"
+    },
+    "InstallChrome": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('Chrome.Download')]",
+        "ArgumentList": ["/silent", "/install"],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.Chrome')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('Chrome.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

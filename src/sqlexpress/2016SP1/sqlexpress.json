@@ -1,0 +1,188 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "SqlAdminPassword": {
+      "Type": "string",
+      "Description": "Password to assign to SA account",
+      "DefaultValue": "PublicPW2019",
+      "Validate": "[ValidatePattern('^[^\\x27]+$', $_)]"
+    },
+    "SqlExpressDownload": {
+      "Type": "string",
+      "Description": "Download location of SQL Express",
+      "DefaultValue": "https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SQLEXPR_x64_ENU.exe"
+    }
+  },
+  "Variables": {
+    "Note.SqlExpressLatest": "https://go.microsoft.com/fwlink/?linkid=829176",
+
+    "Check.SqlExpress": "[ValidateNotNull(GetPackage(Name:variable('SqlExpress.NamePattern'),ErrorAction:'Continue'))]",
+    
+    "SqlExpress.Download": "[JoinPath(variable('Temp.Location'),'sqlexpress.exe')]",
+
+    "SqlExpress.Location": "[JoinPath(variable('Temp.Location'),'sqlexpress')]",
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]",
+
+    "SqlExpress.AlterLogin": "[concat(\"ALTER LOGIN sa WITH password='\",parameter('SqlAdminPassword'),\"'; ALTER LOGIN sa ENABLE;\")]",
+    "SqlExpress.InstanceName": "SQLEXPRESS",
+    "SqlExpress.NamePattern": "Microsoft SQL Server * (*-bit)",
+    "SqlExpress.RegKeyPattern": "[concat('HKLM:\\Software\\Microsoft\\Microsoft SQL Server\\MSSQL*.',variable('SqlExpress.InstanceName'),'\\MSSQLServer\\')]",
+    "SqlExpress.RegKeyRoot": "[concat('Registry::',ResolvePath(variable('SqlExpress.RegKeyPattern')))]",
+    "SqlExpress.Setup": "[JoinPath(variable('SqlExpress.Location'),'setup.exe')]",
+    "SqlExpress.ServiceName": "[concat('MSSQL$',variable('SqlExpress.InstanceName'))]",
+    "SqlExpress.SqlCmd": "[ResolvePath(JoinPath(Environment('ProgramFiles'),'Microsoft SQL Server\\Client SDK\\ODBC\\*\\Tools\\Binn\\sqlcmd.exe'))]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "InstallModule": "Install-Module",
+      "RemoveItem": "Remove-Item",
+      "SetItemProperty": "Set-ItemProperty",
+      "StartProcess": "Start-Process",
+      "WriteInformation": "Write-Information"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadSqlExpress": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[parameter('SqlExpressDownload')]",
+        "DestinationPath": "[variable('SqlExpress.Download')]"
+      },
+      "Skip": "[or(variable('Check.SqlExpress'),TestPath(variable('SqlExpress.Download')))]"
+    },
+    "ExtractInstaller": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('SqlExpress.Download')]",
+        "ArgumentList": [
+          "/qs",
+          "[concat('/x:',variable('SqlExpress.Location'))]"
+        ],
+        "Wait": true
+      },
+      "Skip": "[or(variable('Check.SqlExpress'),TestPath(variable('SqlExpress.Location')))]"
+    },
+    "InstallSqlExpress": {
+      "Type": "Command",
+      "Params": {
+        "Path": "cmd.exe",
+        "Arguments": [
+          "/C",
+          "[variable('SqlExpress.Setup')]",
+          // https://docs.microsoft.com/en-us/sql/database-engine/install-windows/install-sql-server-from-the-command-prompt?view=sql-server-2017
+          "/Q",
+          "/ACTION=Install",
+          "/INSTANCENAME=SQLEXPRESS",
+          "/FEATURES=SQLEngine",
+          "/UPDATEENABLED=0",
+          "/SQLSVCACCOUNT=NT AUTHORITY\\System",
+          "/SQLSYSADMINACCOUNTS=BUILTIN\\ADMINISTRATORS",
+          "/TCPENABLED=1",
+          "/NPENABLED=0",
+          "/IACCEPTSQLSERVERLICENSETERMS"
+        ]
+      },
+      "Skip": "[variable('Check.SqlExpress')]"
+    },
+    "StopSqlExpressService": {
+      "Type": "ManageService",
+      "Params": {
+        "Name": "[variable('SqlExpress.ServiceName')]",
+        "Status": "Stopped",
+        "PostDelay": 1000
+      }
+    },
+    "ConfigureSqlExpress": {
+      "Type": "SetItemProperty",
+      "Params": [
+        {
+          "Path": "[JoinPath(variable('SqlExpress.RegKeyRoot'),'SuperSocketNetLib','Tcp','IPAll')]",
+          "Name": "TcpDynamicPorts",
+          "Value": ""
+        },
+        {
+          "Path": "[JoinPath(variable('SqlExpress.RegKeyRoot'),'SuperSocketNetLib','Tcp','IPAll')]",
+          "Name": "TcpPort",
+          "Value": 1433
+        },
+        {
+          "Path": "[variable('SqlExpress.RegKeyRoot')]",
+          "Name": "LoginMode",
+          "Value": 2
+        }
+      ]
+    },
+    "StartSqlExpressService": {
+      "Type": "ManageService",
+      "Params": {
+        "Name": "[variable('SqlExpress.ServiceName')]",
+        "Status": "Running",
+        "PostDelay": 8000
+      }
+    },
+    "SetSqlExpressSAPassword": {
+      "Type": "Command",
+      "Params": {
+        "Path": "[variable('SqlExpress.SqlCmd')]",
+        "Arguments": [
+          "-Q",
+          "[variable('SqlExpress.AlterLogin')]"
+        ]
+      }
+    },
+    "EnableContainedDbAuth": {
+      "Type": "Command",
+      "Params": {
+        "Path": "[variable('SqlExpress.SqlCmd')]",
+        "Arguments": [
+          "-Q",
+          "EXEC sp_configure 'contained', 1; RECONFIGURE;"
+        ]
+      }
+    },
+    "InstallSqlServerModule": {
+      "Type": "InstallModule",
+      "Params": {
+        "Name": "SqlServer",
+        "AllowClobber": true,
+        "SkipPublisherCheck": true,
+        "Force": true
+      }
+    },
+
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('SqlExpress.Location')]",
+          "[variable('SqlExpress.Download')]",
+          "[JoinPath(Environment('TEMP'),'sqlexpress_decompression_log.txt')]",
+          "[JoinPath(Environment('TEMP'),'SqlSetup.log')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  },
+  "UninstallTasks": {
+
+  }
+}

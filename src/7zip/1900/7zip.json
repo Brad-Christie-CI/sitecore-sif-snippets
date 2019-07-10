@@ -1,0 +1,80 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "SevenZipDownload": {
+      "Type": "string",
+      "Description": "Download locations of 7-zip (x86)",
+      "DefaultValue": "https://www.7-zip.org/a/7z1900.exe"
+    },
+    "SevenZip64Download": {
+      "Type": "string",
+      "Description": "Download locations of 7-zip (x64)",
+      "DefaultValue": "https://www.7-zip.org/a/7z1900-x64.exe"
+    }
+  },
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
+    "Check.SevenZip": "[ValidateNotNull(GetPackage(Name:'7-Zip*',ErrorAction:'Continue'))]",
+
+    "SevenZip.SourceUri": "[if(variable('Check.Is64'),parameter('SevenZip64Download'),parameter('SevenZipDownload'))]",
+    "SevenZip.Download": "[JoinPath(variable('Temp.Location'),'7z.exe')]",
+    "SevenZip.InstallPath": "[JoinPath(Environment('ProgramFiles'),'7-Zip')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression",
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadSevenZip": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('SevenZip.SourceUri')]",
+        "DestinationPath": "[variable('SevenZip.Download')]"
+      },
+      "Skip": "[or(variable('Check.SevenZip'),TestPath(variable('SevenZip.Download')))]"
+    },
+    "InstallSevenZip": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('SevenZip.Download')]",
+        "ArgumentList": ["/S"],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.SevenZip')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('SevenZip.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

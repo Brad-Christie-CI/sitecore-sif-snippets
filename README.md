@@ -57,3 +57,13 @@ Install-RemoteSitecoreConfiguration $config -ScriptBlock {
   Install-SitecoreConfiguration -Path $_ -Verbose 
 }
 ```
+
+### TLS Handshake error?
+
+Might have to temporarily enable TLS 1.2
+
+```
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
+```
+
+From there, be sure to install `src/tls/1.2/tls.json` so it's enabled at the machine level.

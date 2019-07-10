@@ -9,4 +9,4 @@ RUN [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::Sec
 
 FROM build as test
 SHELL ["powershell.exe", "-Command", "$ErrorActionPreference='Stop';"]
-RUN git --version
+RUN node --version ; npm --version

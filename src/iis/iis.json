@@ -1,0 +1,221 @@
+{
+  "Register": {
+    "Tasks": {
+      "EnableWindowsOptionalFeature": "Enable-WindowsOptionalFeature"
+    }
+  },
+  "Tasks": {
+    "IISWebServerRole": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-WebServerRole",
+        "Online": true
+      }
+    },
+    "IISWebServer": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-WebServer",
+        "Online": true
+      }
+    },
+    "IISCommonHttpFeatures": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-CommonHttpFeatures",
+        "Online": true
+      }
+    },
+    "IISHttpErrors": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-HttpErrors",
+        "Online": true
+      }
+    },
+    "IISHttpRedirect": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-HttpRedirect",
+        "Online": true
+      }
+    },
+    "IISApplicationDevelopment": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-ApplicationDevelopment",
+        "Online": true
+      }
+    },
+    "NetFx4ExtendedASPNET45": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "NetFx4Extended-ASPNET45",
+        "Online": true
+      }
+    },
+    "IISNetFxExtensibility45": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-NetFxExtensibility45",
+        "Online": true
+      }
+    },
+    "IISHealthAndDiagnostics": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-HealthAndDiagnostics",
+        "Online": true
+      }
+    },
+    "IISHttpLogging": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-HttpLogging",
+        "Online": true
+      }
+    },
+    "IISLoggingLibraries": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-LoggingLibraries",
+        "Online": true
+      }
+    },
+    "IISRequestMonitor": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-RequestMonitor",
+        "Online": true
+      }
+    },
+    "IISHttpTracing": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-HttpTracing",
+        "Online": true
+      }
+    },
+    "IISSecurity": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-Security",
+        "Online": true
+      }
+    },
+    "IISRequestFiltering": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-RequestFiltering",
+        "Online": true
+      }
+    },
+    "IISPerformance": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-Performance",
+        "Online": true
+      }
+    },
+    "IISWebServerManagementTools": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-WebServerManagementTools",
+        "Online": true
+      }
+    },
+    "IISIIS6ManagementCompatibility": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-IIS6ManagementCompatibility",
+        "Online": true
+      }
+    },
+    "IISMetabase": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-Metabase",
+        "Online": true
+      }
+    },
+    "IISManagementConsole": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-ManagementConsole",
+        "Online": true,
+        // for docker/nanoserver
+        "ErrorAction": "Continue"
+      }
+    },
+    "IISBasicAuthentication": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-BasicAuthentication",
+        "Online": true
+      }
+    },
+    "IISWindowsAuthentication": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-WindowsAuthentication",
+        "Online": true
+      }
+    },
+    "IISStaticContent": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-StaticContent",
+        "Online": true
+      }
+    },
+    "IISDefaultDocument": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-DefaultDocument",
+        "Online": true
+      }
+    },
+    "IISWebSockets": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-WebSockets",
+        "Online": true
+      }
+    },
+    "IISApplicationInit": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-ApplicationInit",
+        "Online": true
+      }
+    },
+    "IISISAPIExtensions": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-ISAPIExtensions",
+        "Online": true
+      }
+    },
+    "IISISAPIFilter": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-ISAPIFilter",
+        "Online": true
+      }
+    },
+    "IISHttpCompressionStatic": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-HttpCompressionStatic",
+        "Online": true
+      }
+    },
+    "IISASPNET45": {
+      "Type": "EnableWindowsOptionalFeature",
+      "Params": {
+        "FeatureName": "IIS-ASPNET45",
+        "Online": true
+      }
+    }
+  }
+}

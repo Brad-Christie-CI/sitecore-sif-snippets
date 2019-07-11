@@ -1,0 +1,74 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "DotNetDownload": {
+      "Type": "string",
+      "Description": "Download location for .NET Framework",
+      "DefaultValue": "https://download.microsoft.com/download/9/0/1/901B684B-659E-4CBD-BEC8-B3F06967C2E7/NDP471-DevPack-ENU.exe"
+    }
+  },
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
+    "Check.DotNet": "[ValidateNotNull(GetPackage(Name:'Microsoft` .NET` Framework 4.7.1` SDK',ErrorAction:'Continue'))]",
+
+    "DotNet.SourceUri": "[parameter('DotNetDownload')]",
+    "DotNet.Download": "[JoinPath(variable('Temp.Location'),'NDP471-DevPack-ENU.exe')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression",
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadDotNet": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('DotNet.SourceUri')]",
+        "DestinationPath": "[variable('DotNet.Download')]"
+      },
+      "Skip": "[or(variable('Check.DotNet'),TestPath(variable('DotNet.Download')))]"
+    },
+    "InstallDotNet": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('DotNet.Download')]",
+        "ArgumentList": ["/q", "/norestart"],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.DotNet')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('DotNet.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

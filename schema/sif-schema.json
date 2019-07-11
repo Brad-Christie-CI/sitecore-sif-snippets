@@ -23,6 +23,17 @@
       "additionalProperties": false,
       "minProperties": 1
     },
+    "Includes": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zAA-Z]([a-zA-Z0-9:]+)?$": {
+          "type": "object",
+          "oneOf": [
+            { "$ref": "#/definitions/include" }
+          ]
+        }
+      }
+    },
     "Register": {
       "properties": {
         "ConfigFunction": {
@@ -84,6 +95,14 @@
   "additionalProperties": false,
   "required": ["Tasks"],
   "definitions": {
+    "include": {
+      "properties": {
+        "Source": {
+          "type": "string"
+        }
+      },
+      "required": ["Source"]
+    },
     "params": {
       "patternProperties": {
         "^[a-zA-Z][\\w-]*$": {

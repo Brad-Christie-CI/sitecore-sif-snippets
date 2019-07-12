@@ -17,7 +17,7 @@ Function Install-RemoteSitecoreConfiguration {
   )
   Process {
     $config = Join-Path $env:TEMP -ChildPath ("{0}.json" -f (New-Guid).ToString("n"))
-    If ($PSCmdlet.ShouldProcess("Download '${Uri}' to '${config}')) {
+    If ($PSCmdlet.ShouldProcess("Download '${Uri}' to '${config}'")) {
       Invoke-WebRequest $Uri -OutFile $config -UseBasicParsing
     }
 

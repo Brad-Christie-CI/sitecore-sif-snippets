@@ -9,33 +9,35 @@ Setup a helper function:
 Function Install-RemoteSitecoreConfiguration {
   [CmdletBinding(SupportsShouldProcess)]
   Param(
-    [Parameter(Position = 0, Mandatory)]
-    [Uri]$Uri
+    [Parameter(Position = 0, Mandatory, ValueFromPipeline)]
+    [uri[]]$Uri
     ,
     [Parameter(Position = 1)]
     [scriptblock]$ScriptBlock = { Install-SitecoreConfiguration -Path $_ }
   )
   Process {
-    $config = Join-Path $env:TEMP -ChildPath ("{0}.json" -f (New-Guid).ToString("n"))
-    If ($PSCmdlet.ShouldProcess("Download '${Uri}' to '${config}'")) {
-      Invoke-WebRequest $Uri -OutFile $config -UseBasicParsing
-    }
+    $Uri | ForEach-Object {
+      $config = Join-Path $env:TEMP -ChildPath ("{0}.json" -f (New-Guid).ToString("n"))
+      If ($PSCmdlet.ShouldProcess("Download '${_}' to '${config}'")) {
+        Invoke-WebRequest $_ -OutFile $config -UseBasicParsing
+      }
 
-    $ps = $null
-    Try {
-      If ($PSCmdlet.ShouldProcess("Execute install script")) {
-        $ps = [powershell]::Create()
-        [void]$ps.AddScript("param(`$_);$($ScriptBlock.ToString())")
-        [void]$ps.AddParameter("_", $config)
-      
-        Return $ps.Invoke()
-      }
-    } Finally {
-      If ($ps) {
-        $ps.Dispose()
-      }
-      If ($PSCmdlet.ShouldProcess("Cleanup '${config}'") -and (Test-Path $config)) {
-        Remove-Item $config -Force
+      $ps = $null
+      Try {
+        If ($PSCmdlet.ShouldProcess("Execute install script")) {
+          $ps = [powershell]::Create()
+          [void]$ps.AddScript("param(`$_);$($ScriptBlock.ToString())")
+          [void]$ps.AddParameter("_", $config)
+
+          Return $ps.Invoke()
+        }
+      } Finally {
+        If ($ps) {
+          $ps.Dispose()
+        }
+        If ($PSCmdlet.ShouldProcess("Cleanup '${config}'") -and (Test-Path $config)) {
+          Remove-Item $config -Force
+        }
       }
     }
   }

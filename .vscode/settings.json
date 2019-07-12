@@ -2,6 +2,7 @@
   "json.schemas": [
     {
       "fileMatch": [
+        "/example/*.json",
         "/src/*.json",
         "/test/*.json"
       ],

@@ -22,8 +22,8 @@ $packageRepository = Join-Path $env:HOMEDRIVE -ChildPath "${env:HOMEPATH}\Downlo
   "dotnet-sdk/4.7.1/dotnet-sdk.json"      # for building habitathome.platform
 ) | ForEach-Object {
   $uri = "https://raw.githubusercontent.com/Brad-Christie-CI/sitecore-sif-snippets/master/src/${_}"
-  $name = [System.IO.Path]::GetFileName($_)
-  Invoke-WebRequest $uri -OutFile "${BuildPath}\${name}" -UseBasicParsing
+  $basename = [IO.Path]::GetFileName($_)
+  Install-RemoteSitecoreConfiguration $uri *>&1 | Tee-Object "${PSScriptRoot}\${basename}.log"
 }
 
 # update in-session $env:PATH based on installs above
@@ -62,16 +62,10 @@ Try {
 
   $scCreds = @{ devSitecoreUsername = $env:DEV_SITECORE_USER ; devSitecorePassword = $env:DEV_SITECORE_PASSWORD }
 
-  # fix another typo
-  $c = Get-Content ".\install-singledeveloper.ps1"
-  $c = $c | ForEach-Object { $_.Replace('$$sharedResourcePath','$sharedResourcePath') }
-  $c | Set-Content ".\install-singledeveloper.ps1"
-  .\install-singledeveloper.ps1 @scCreds *>&1 | Tee-Object "${PSScriptRooot}\install-singledeveloper.log"
+  # run singledeveloper install
+  .\install-singledeveloper.ps1 @scCreds *>&1 | Tee-Object "${PSScriptRooot}\install-singledeveloper.ps1.log"
   
-  # fix & run install-modules
-  $c = Get-Content ".\install-modules.ps1"
-  $c = $c | ForEach-Object { $_.Replace('[securestring] $devSitecorePassword', '[string] $devSitecorePassword') }
-  $c | Set-Content ".\install-modules.ps1"
+  # run install-modules
   .\install-modules.ps1 @scCreds *>&1 | Tee-Object "${PSScriptRooot}\install-modules.ps1.log"
 
   # Publish Site
@@ -79,9 +73,6 @@ Try {
   $sitecoreLoginUrl = "https://{0}/sitecore/login" -f (Get-Content ".\configuration-xp0.json" | ConvertFrom-Json).settings.site.hostName
   Start-Process $sitecoreLoginUrl
   Read-Host -Prompt "Sitecore site must be published before continuing. Please do so, and press ENTER when finished."
-  
-} Catch {
-  Throw
 } Finally {
   Pop-Location
 }

@@ -1,55 +1,66 @@
 [CmdletBinding()]
 Param(
   [Parameter()]
-  [string]$SourcePath = ".\src"
-  ,
-  [Parameter()]
   [string[]]$Filter = @("*")
   ,
   [Parameter()]
-  [string]$BaseImage = $null
+  [AllowNull()]
+  [Alias("BaseImage")]
+  [string]$Base = $null
+  ,
+  [Parameter()]
+  [string]$ReleaseId = (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId
+  ,
+  [Parameter()]
+  [ValidatePattern("^\d+(?:\.\d+){,2}$")]
+  [string]$SifVersion = "2.1.0"
 )
 Begin {
   $__eap = $ErrorActionPreference
+  $__ia = $InformationPreference
+  $__pp = $ProgressPreference
+
   $ErrorActionPreference = "Stop"
-  
-  Get-Command "docker.exe" -CommandType "Application" | Out-Null
-  
+  $InformationPreference = "Continue"
+  $ProgressPreference = "SilentlyContinue"
+
+  $SourcePath = Join-Path $PSScriptRoot -ChildPath "src"
+
+  Write-Information "To show docker build output please include the -Verbose switch."
 }
 Process {
-  If ([string]::IsNullOrWhiteSpace($BaseImage)) {
-    $BaseImage = "mcr.microsoft.com/windows/servercore:{0}" -f (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId
+  $docker = Get-Command "docker.exe" -CommandType "Application" -ErrorAction SilentlyContinue
+  If ($null -eq $docker) {
+    Throw "Docker.exe not found, unable to continue."
   }
-  $baseImageTag = "{0}:latest" -f (Split-Path $PSScriptRoot -Leaf)
-  $Dockerfile = @"
-# escape=``
-FROM ${BaseImage}
-SHELL ["powershell.exe", "-Command", "`$ErrorActionPreference='Stop';`$ProgressPreference='SilentlyContinue';"]
 
-# Update NuGet & Install SIF
-RUN Add-WindowsFeature web-server ; ``
-Install-PackageProvider -Name 'NuGet' -Force ; ``
-Install-Module -Name 'PowerShellGet' -Force ; ``
-Register-PSRepository 'SitecoreGallery' -SourceLocation 'https://sitecore.myget.org/F/sc-powershell/api/v2' -InstallationPolicy Trusted ; ``
-Install-Module 'SitecoreInstallFramework' -Repository 'SitecoreGallery'
+  $Dockerfile = Join-Path $PSScriptRoot -ChildPath "Dockerfile"
+  If (!(Test-Path $Dockerfile)) {
+    Throw "Dockerfile not found, unable to continue."
+  }
 
-# Copy and run configuration
-RUN New-Item c:\dev\ -ItemType Directory | Out-Null
-WORKDIR /sif
-"@
-  Try {
-    Write-Output "Building base image from ${BaseImage}...please wait"
-    Write-Output "To show docker build output please include the -Verbose switch."
-    $Dockerfile | docker build -t $baseImageTag --file - . | Write-Verbose
+  If ([string]::IsNullOrWhiteSpace($Base)) {
+    $Base = "mcr.microsoft.com/windows/servercore:${ReleaseId}"
+  }
+  $BaseTag = "sitecoreinstallframework:${SifVersion}-${releaseId}"
+  
+  $ExistingBase = & docker.exe images -q $BaseTag
+  If ($null -eq $ExistingBase) {
+    Write-Output "Building SIF image ${BaseTag}..."
+    & docker.exe build `
+      --tag $BaseTag `
+      --build-arg "RELEASEID=${ReleaseId}" `
+      --build-arg "BASE=${Base}" `
+      --file $Dockerfile `
+      $PSScriptRoot | Write-Verbose
     If ($LASTEXITCODE -ne 0) {
-      Throw "non-zero exit code ${LASTEXITCODE}"
+      Throw "Unable to build SIF base image, non-zero exit code: ${LASTEXITCODE}"
     }
-    Write-Output "BaseImage built successfully."
-  } Catch {
-    Write-Error "BaseImage build failure: $($_.Exception.Message)"
+  } Else {
+    Write-Output "SIF image: ${BaseTag}"
   }
 
-  Get-Childitem "${SourcePath}\*" -Include "Dockerfile" -Recurse | ForEach-Object {
+  Get-Childitem $SourcePath -Include "Dockerfile" -Recurse | ForEach-Object {
     $target = Split-Path (Split-Path $_.Directory -Parent) -Leaf
     $version = Split-Path $_.Directory -Leaf
     $tag = "${target}:${version}"
@@ -58,21 +69,25 @@ WORKDIR /sif
     If ($match -notcontains $true) {
       Write-Output "Skipping ${tag} due to filter."
       Return
-    } Else {
-      Write-Output "Building ${tag}...please wait."
     }
-
+    
+    Write-Output "Building ${tag}..."
     Try {
-      docker build --tag $tag --build-arg BASE=${baseImageTag} $_.Directory | Write-Verbose
+      & docker.exe build `
+        --tag $tag `
+        --build-arg "BASE=${BaseTag}" `
+        $_.Directory | Write-Verbose
       If ($LASTEXITCODE -ne 0) {
         Throw "non-zero exit code ${LASTEXITCODE}."
       }
       Write-Output "${tag} built successfully."
     } Catch {
-      Write-Warning "${tag} failed w/ error '$($_.Exception.Message)'"
+      Write-Warning "${tag} failed, '$($_.Exception.Message)'"
     }
   }
 }
 End {
   $ErrorActionPreference = $__eap
+  $InformationPreference = $__ia
+  $ProgressPreference = $__pp
 }

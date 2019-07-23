@@ -144,7 +144,7 @@
         "FeatureName": "IIS-ManagementConsole",
         "Online": true,
         // for docker/nanoserver
-        "ErrorAction": "Continue"
+        "ErrorAction": "Ignore"
       }
     },
     "IISBasicAuthentication": {

@@ -1,4 +1,7 @@
 {
+  "Variables": {
+    "Test.IsHeadless": "[equal(environment('USERNAME'),'ContainerAdministrator')]"
+  },
   "Register": {
     "Tasks": {
       "EnableWindowsOptionalFeature": "Enable-WindowsOptionalFeature"
@@ -140,11 +143,10 @@
     },
     "IISManagementConsole": {
       "Type": "EnableWindowsOptionalFeature",
+      "Skip": "[variable('Test.IsHeadless')]",
       "Params": {
         "FeatureName": "IIS-ManagementConsole",
-        "Online": true,
-        // for docker/nanoserver
-        "ErrorAction": "Ignore"
+        "Online": true
       }
     },
     "IISBasicAuthentication": {

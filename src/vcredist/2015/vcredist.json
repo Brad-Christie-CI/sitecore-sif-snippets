@@ -1,0 +1,80 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "VCRedistDownload": {
+      "Type": "string",
+      "Description": "Download location for VC++ 2015 Redistributable (x86)",
+      "DefaultValue": "https://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x86.exe"
+    },
+    "VCRedist64Download": {
+      "Type": "string",
+      "Description": "Download location for VC++ 2015 Redistributable (x64)",
+      "DefaultValue": "https://download.microsoft.com/download/6/D/F/6DF3FF94-F7F9-4F0B-838C-A328D1A7D0EE/vc_redist.x64.exe"
+    }
+  },
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
+    "Check.VCRedist": "[ValidateNotNull(GetPackage(Name:variable('VCRedist.DisplayName'),ErrorAction:'Continue'))]",
+    "Check.VCRedist64": "[ValidateNotNull(GetPackage(Name:variable('VCRedist64.DisplayName'),ErrorAction:'Continue'))]",
+
+    "VCRedist.SourceUri": "[if(variable('Check.Is64'),parameter('VCRedist64Download'),parameter('VCRedistDownload'))]",
+    "VCRedist.DisplayName": "Microsoft Visual C++ 2015 Redistributable * - 14.0.24212",
+    "VCRedist.Download": "[JoinPath(variable('Temp.Location'),'vc_redist.exe')]",
+    
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression",
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadVCRedist": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('VCRedist.SourceUri')]",
+        "DestinationPath": "[variable('VCRedist.Download')]"
+      },
+      "Skip": "[or(variable('Check.VCRedist'),TestPath(variable('VCRedist.Download')))]"
+    },
+    "InstallVCRedist": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('VCRedist.Download')]",
+        "ArgumentList": ["/quiet", "/passive", "/norestart"]
+      },
+      "Skip": "[variable('Check.VCRedist')]"
+    },
+
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('VCRedist.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

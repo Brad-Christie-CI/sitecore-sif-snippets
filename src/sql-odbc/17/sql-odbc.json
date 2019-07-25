@@ -1,0 +1,86 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "SqlOdbcDownload": {
+      "Type": "string",
+      "Description": "Download location for Microsoft ODBC Driver for SQL Server (x86)",
+      "DefaultValue": "https://download.microsoft.com/download/E/6/B/E6BFDC7A-5BCD-4C51-9912-635646DA801E/en-US/msodbcsql_17.3.1.1_x86.msi"
+    },
+    "SqlOdbc64Download": {
+      "Type": "string",
+      "Description": "Download location for Microsoft ODBC Driver for SQL Server (x64)",
+      "DefaultValue": "https://download.microsoft.com/download/E/6/B/E6BFDC7A-5BCD-4C51-9912-635646DA801E/en-US/msodbcsql_17.3.1.1_x64.msi"
+    }
+  },
+  "Variables": {
+    "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
+    "Check.SqlOdbc": "[ValidateNotNull(GetPackage(Name:variable('SqlOdbc.DisplayName'),ErrorAction:'Continue'))]",
+
+    "SqlOdbc.SourceUri": "[if(variable('Check.Is64'),parameter('SqlOdbc64Download'),parameter('SqlOdbcDownload'))]",
+    "SqlOdbc.DisplayName": "Microsoft ODBC Driver 17 for SQL Server",
+    "SqlOdbc.Download": "[JoinPath(variable('Temp.Location'),'msodbcsql.msi')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression",
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadSqlOdbc": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('SqlOdbc.SourceUri')]",
+        "DestinationPath": "[variable('SqlOdbc.Download')]"
+      },
+      "Skip": "[or(variable('Check.SqlOdbc'),TestPath(variable('SqlOdbc.Download')))]"
+    },
+    "InstallSqlOdbc": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "msiexec.exe",
+        "ArgumentList": [
+          "/i", "[variable('SqlOdbc.Download')]",
+          "/quiet",
+          "/norestart",
+          "IACCEPTMSODBCSQLLICENSETERMS=YES",
+          "ADDLOCAL=ALL"
+        ],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.SqlOdbc')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('SqlOdbc.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

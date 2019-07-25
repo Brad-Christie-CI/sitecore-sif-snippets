@@ -1,5 +1,10 @@
 {
-  // https://www.microsoft.com/en-us/download/details.aspx?id=53339
+  // https://www.microsoft.com/download/details.aspx?id=50420
+  // Details:
+  // The Microsoft ODBC Driver for SQL Server allows native C and C++ applications to leverage
+  // the standard ODBC API and connect to Microsoft SQL Server 2008, SQL Server 2008 R2, SQL
+  // Server 2012, SQL Server 2014, SQL Server 2016 (Preview), Analytics Platform System, Azure
+  // SQL Database and Azure SQL Data Warehouse.
   // Requirements:
   // Linux, Mac OS X, Windows 10 , Windows 7, Windows 7 Service Pack 1, Windows 8, Windows 8.1,
   // Windows Server 2008 R2, Windows Server 2008 R2 SP1, Windows Server 2012 R2
@@ -13,12 +18,12 @@
     "SqlOdbcDownload": {
       "Type": "string",
       "Description": "Download location for Microsoft ODBC Driver for SQL Server (x86)",
-      "DefaultValue": "https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x86/msodbcsql.msi"
+      "DefaultValue": "https://download.microsoft.com/download/1/E/7/1E7B1181-3974-4B29-9A47-CC857B271AA2/English/X86/msodbcsql.msi"
     },
     "SqlOdbc64Download": {
       "Type": "string",
       "Description": "Download location for Microsoft ODBC Driver for SQL Server (x64)",
-      "DefaultValue": "https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi"
+      "DefaultValue": "https://download.microsoft.com/download/1/E/7/1E7B1181-3974-4B29-9A47-CC857B271AA2/English/X64/msodbcsql.msi"
     }
   },
   "Variables": {

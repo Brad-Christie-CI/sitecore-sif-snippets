@@ -1,4 +1,8 @@
 {
+  // https://www.microsoft.com/download/details.aspx?id=56567
+  // Requirements:
+  // Linux, Mac OS X, Windows 10 , Windows 7, Windows 8, Windows 8.1, Windows Server 2008 R2,
+  // Windows Server 2012, Windows Server 2012 R2, Windows Server 2016
   "Parameters": {
     "TempLocation": {
       "Type": "string",

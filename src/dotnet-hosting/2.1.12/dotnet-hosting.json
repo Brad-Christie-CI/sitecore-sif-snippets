@@ -1,0 +1,74 @@
+{
+  "Parameters": {
+    "TempLocation": {
+      "Type": "string",
+      "Description": "Alternative location to save downloads. If left on the default $Env:Temp will be used.",
+      "DefaultValue": "SIF-Default",
+      "Validate": "[TestPath(variable('Temp.Location'))]"
+    },
+    "DotNetHostingDownload": {
+      "Type": "string",
+      "Description": "Download location for .NET Core Runtime & Hosting Bundle",
+      "DefaultValue": "https://download.visualstudio.microsoft.com/download/pr/dc3606d0-06b2-4ddb-9190-daaf9d2947e4/8af36c231247dbdbf4dde41b8a70b221/dotnet-hosting-2.1.7-win.exe"
+    }
+  },
+  "Variables": {
+    "Check.DotNetHosting": "[ValidateNotNull(GetPackage(Name:variable('DotNetHosting.DisplayName'),ErrorAction:'Continue'))]",
+
+    "DotNetHosting.SourceUri": "[parameter('DotNetHostingDownload')]",
+    "DotNetHosting.DisplayName": "Microsoft .NET Core 2.1.7 - Windows Server Hosting",
+    "DotNetHosting.Download": "[JoinPath(variable('Temp.Location'),'dotnet-hosting-2.1.7-win.exe')]",
+
+    "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
+
+    "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]"
+  },
+  "Register": {
+    "ConfigFunction": {
+      "Eval": "Invoke-Expression",
+      "GetPackage": "Get-Package",
+      "TestPath": "Test-Path"
+    },
+    "Tasks": {
+      "RemoveItem": "Remove-Item",
+      "StartProcess": "Start-Process",
+      "UninstallPackage": "Uninstall-Package"
+    }
+  },
+  "Tasks": {
+    "SetupTempLocation": {
+      "Type": "EnsurePath",
+      "Params": {
+        "Exists": ["[variable('Temp.Location')]"]
+      }
+    },
+
+    "DownloadDotNetHosting": {
+      "Type": "DownloadFile",
+      "Params": {
+        "SourceUri": "[variable('DotNetHosting.SourceUri')]",
+        "DestinationPath": "[variable('DotNetHosting.Download')]"
+      },
+      "Skip": "[or(variable('Check.DotNetHosting'),TestPath(variable('DotNetHosting.Download')))]"
+    },
+    "InstallDotNetHosting": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "[variable('DotNetHosting.Download')]",
+        "ArgumentList": ["/install", "/quiet"],
+        "Wait": true
+      },
+      "Skip": "[variable('Check.DotNetHosting')]"
+    },
+    "CleanArtifacts": {
+      "Type": "RemoveItem",
+      "Params": {
+        "LiteralPath": [
+          "[variable('DotNetHosting.Download')]"
+        ],
+        "Recurse": true,
+        "ErrorAction": "SilentlyContinue"
+      }
+    }
+  }
+}

@@ -426,7 +426,7 @@
       "Type": "RemoveItem",
       "Params": {
         "LiteralPath": [
-          "[variable('OpenJS.Location')]",
+          "[variable('OpenJDK.Location')]",
           "[variable('Solr.Location')]",
           "[variable('Nssm.Location')]"
         ],

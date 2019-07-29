@@ -19,20 +19,19 @@
     }
   },
   "Variables": {
-    "Note.SqlExpressLatest": "https://go.microsoft.com/fwlink/?linkid=829176",
-
-    "Check.SqlExpress": "[ValidateNotNull(GetPackage(Name:variable('SqlExpress.NamePattern'),ErrorAction:'Continue'))]",
+    "Check.SqlExpress": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.SqlExpress'),ErrorAction:'Continue'))]",
     
-    "SqlExpress.Download": "[JoinPath(variable('Temp.Location'),'sqlexpress.exe')]",
+    "DisplayName.SqlExpress": "Microsoft SQL Server * (*-bit)",
 
+    "SqlExpress.Download": "[JoinPath(variable('Temp.Location'),'sqlexpress.exe')]",
     "SqlExpress.Location": "[JoinPath(variable('Temp.Location'),'sqlexpress')]",
+
     "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",
 
     "Test.Temp.Location" : "[equal(parameter('TempLocation'),'SIF-Default')]",
 
     "SqlExpress.AlterLogin": "[concat(\"ALTER LOGIN sa WITH password='\",parameter('SqlAdminPassword'),\"'; ALTER LOGIN sa ENABLE;\")]",
     "SqlExpress.InstanceName": "SQLEXPRESS",
-    "SqlExpress.NamePattern": "Microsoft SQL Server * (*-bit)",
     "SqlExpress.RegKeyPattern": "[concat('HKLM:\\Software\\Microsoft\\Microsoft SQL Server\\MSSQL*.',variable('SqlExpress.InstanceName'),'\\MSSQLServer\\')]",
     "SqlExpress.RegKeyRoot": "[concat('Registry::',ResolvePath(variable('SqlExpress.RegKeyPattern')))]",
     "SqlExpress.Setup": "[JoinPath(variable('SqlExpress.Location'),'setup.exe')]",
@@ -93,7 +92,7 @@
           "/INSTANCENAME=SQLEXPRESS",
           "/FEATURES=SQLEngine",
           "/UPDATEENABLED=0",
-          "/SQLSVCACCOUNT=NT AUTHORITY\\System",
+          "/SQLSVCACCOUNT=NT AUTHORITY\\NETWORK SERVICE",
           "/SQLSYSADMINACCOUNTS=BUILTIN\\ADMINISTRATORS",
           "/TCPENABLED=1",
           "/NPENABLED=0",

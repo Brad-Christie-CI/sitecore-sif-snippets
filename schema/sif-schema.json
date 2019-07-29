@@ -146,9 +146,6 @@
     },
     "task": {
       "properties": {
-        "Check": {
-          "type": "string"
-        },
         "Params": {
           "type": ["object","array"],
           "oneOf": [
@@ -163,6 +160,9 @@
               }
             }
           ]
+        },
+        "Requires": {
+          "type": "string"
         },
         "Skip": {
           "type": ["boolean","string"],

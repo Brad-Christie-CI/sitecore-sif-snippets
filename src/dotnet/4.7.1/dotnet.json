@@ -14,7 +14,9 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.DotNet": "[ValidateNotNull(GetPackage(Name:'Microsoft` .NET` Framework` 4.7.1` Targeting` Pack',ErrorAction:'Continue'))]",
+    "Check.DotNet": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.DotNet'),ErrorAction:'Continue'))]",
+
+    "DisplayName.DotNet": "Microsoft .NET Framework 4.7.1 Targeting Pack",
 
     "DotNet.SourceUri": "[parameter('DotNetDownload')]",
     "DotNet.Download": "[JoinPath(variable('Temp.Location'),'NDP471-KB4033342-x86-x64-AllOS-ENU.exe')]",

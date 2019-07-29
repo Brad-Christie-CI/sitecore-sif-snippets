@@ -1,4 +1,5 @@
 {
+  // https://www.iis.net/downloads/microsoft/url-rewrite
   "Parameters": {
     "TempLocation": {
       "Type": "string",
@@ -19,7 +20,9 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.UrlRewrite": "[ValidateNotNull(GetPackage(Name:'IIS` URL` Rewrite` Module` *',ErrorAction:'Continue'))]",
+    "Check.UrlRewrite": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.UrlRewrite'),ErrorAction:'Continue'))]",
+
+    "DisplayName.UrlRewrite": "IIS URL Rewrite Module *",
 
     "UrlRewrite.SourceUri": "[if(variable('Check.Is64'),parameter('UrlRewrite64Download'),parameter('UrlRewriteDownload'))]",
     "UrlRewrite.Download": "[JoinPath(variable('Temp.Location'),'rewrite.msi')]",

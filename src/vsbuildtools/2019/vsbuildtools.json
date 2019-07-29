@@ -13,7 +13,9 @@
     }
   },
   "Variables": {
-    "Check.VSBuildTools": "[ValidateNotNull(GetPackage(Name:'Visual` Studio` Build` Tools` *',ErrorAction:'Continue'))]",
+    "Check.VSBuildTools": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.VSBuildTools'),ErrorAction:'Continue'))]",
+
+    "Display.VSBuildTools": "Visual Studio Build Tools *",
     
     "VSBuildTools.SourceUri": "[parameter('VSBuildToolsDownload')]",
     "VSBuildTools.Download": "[JoinPath(variable('Temp.Location'),'vs_buildtools.exe')]",

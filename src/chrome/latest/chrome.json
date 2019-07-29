@@ -13,7 +13,9 @@
     }
   },
   "Variables": {
-    "Check.Chrome": "[ValidateNotNull(GetPackage(Name:'Google` Chrome',ErrorAction:'Continue'))]",
+    "Check.Chrome": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.Chrome'),ErrorAction:'Continue'))]",
+
+    "DisplayName.Chrome": "Google Chrome",
 
     "Chrome.SourceUri": "[parameter('ChromeDownload')]",
     "Chrome.Download": "[JoinPath(variable('Temp.Location'),'chrome.exe')]",

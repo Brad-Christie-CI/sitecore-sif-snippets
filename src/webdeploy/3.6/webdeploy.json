@@ -1,4 +1,5 @@
 {
+  // https://www.iis.net/downloads/microsoft/web-deploy
   "Parameters": {
     "TempLocation": {
       "Type": "string",
@@ -19,7 +20,9 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.WebDeploy": "[ValidateNotNull(GetPackage(Name:'Microsoft` Web` Deploy` *',ErrorAction:'Continue'))]",
+    "Check.WebDeploy": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.WebDeploy'),ErrorAction:'Continue'))]",
+
+    "DisplayName.WebDeploy": "Microsoft Web Deploy *",
 
     "WebDeploy.SourceUri": "[if(variable('Check.Is64'),parameter('WebDeploy64Download'),parameter('WebDeployDownload'))]",
     "WebDeploy.Download": "[JoinPath(variable('Temp.Location'),'rewrite.msi')]",

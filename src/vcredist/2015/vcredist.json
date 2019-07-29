@@ -19,11 +19,11 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.VCRedist": "[ValidateNotNull(GetPackage(Name:variable('VCRedist.DisplayName'),ErrorAction:'Continue'))]",
-    "Check.VCRedist64": "[ValidateNotNull(GetPackage(Name:variable('VCRedist64.DisplayName'),ErrorAction:'Continue'))]",
+    "Check.VCRedist": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.VCRedist'),ErrorAction:'Continue'))]",
+
+    "DisplayName.VCRedist": "Microsoft Visual C++ 2015 Redistributable * - 14.0.24212",
 
     "VCRedist.SourceUri": "[if(variable('Check.Is64'),parameter('VCRedist64Download'),parameter('VCRedistDownload'))]",
-    "VCRedist.DisplayName": "Microsoft Visual C++ 2015 Redistributable * - 14.0.24212",
     "VCRedist.Download": "[JoinPath(variable('Temp.Location'),'vc_redist.exe')]",
     
     "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",

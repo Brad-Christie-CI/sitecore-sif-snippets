@@ -23,10 +23,11 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.SqlOdbc": "[ValidateNotNull(GetPackage(Name:variable('SqlOdbc.DisplayName'),ErrorAction:'Continue'))]",
+    "Check.SqlOdbc": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.SqlOdbc'),ErrorAction:'Continue'))]",
+
+    "DisplayName.SqlOdbc": "Microsoft ODBC Driver 13 for SQL Server",
 
     "SqlOdbc.SourceUri": "[if(variable('Check.Is64'),parameter('SqlOdbc64Download'),parameter('SqlOdbcDownload'))]",
-    "SqlOdbc.DisplayName": "Microsoft ODBC Driver 13 for SQL Server",
     "SqlOdbc.Download": "[JoinPath(variable('Temp.Location'),'msodbcsql.msi')]",
 
     "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",

@@ -14,10 +14,11 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.DotNet": "[ValidateNotNull(GetPackage(Name:variable('DotNet.DisplayName'),ErrorAction:'Continue'))]",
+    "Check.DotNet": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.DotNet'),ErrorAction:'Continue'))]",
+    
+    "DisplayName.DotNet": "Microsoft .NET Framework 4.7.2 Targeting Pack",
 
     "DotNet.SourceUri": "[parameter('DotNetDownload')]",
-    "DotNet.DisplayName": "Microsoft .NET Framework 4.7.2 Targeting Pack",
     "DotNet.Download": "[JoinPath(variable('Temp.Location'),'NDP472-KB4054530-x86-x64-AllOS-ENU.exe')]",
 
     "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",

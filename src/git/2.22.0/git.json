@@ -19,7 +19,9 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.Git": "[ValidateNotNull(GetPackage(Name:'Git` version` *',ErrorAction:'Continue'))]",
+    "Check.Git": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.Git'),ErrorAction:'Continue'))]",
+
+    "DisplayName.Git": "Git version *",
 
     "Git.SourceUri": "[if(variable('Check.Is64'),parameter('Git64Download'),parameter('GitDownload'))]",
     "Git.Download": "[JoinPath(variable('Temp.Location'),'git.exe')]",

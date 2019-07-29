@@ -13,10 +13,11 @@
     }
   },
   "Variables": {
-    "Check.DotNetHosting": "[ValidateNotNull(GetPackage(Name:variable('DotNetHosting.DisplayName'),ErrorAction:'Continue'))]",
+    "Check.DotNetHosting": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.DotNetHosting'),ErrorAction:'Continue'))]",
+
+    "DisplayName.DotNetHosting": "Microsoft .NET Core 2.1.7 - Windows Server Hosting",
 
     "DotNetHosting.SourceUri": "[parameter('DotNetHostingDownload')]",
-    "DotNetHosting.DisplayName": "Microsoft .NET Core 2.1.7 - Windows Server Hosting",
     "DotNetHosting.Download": "[JoinPath(variable('Temp.Location'),'dotnet-hosting-2.1.7-win.exe')]",
 
     "Temp.Location" : "[if(variable('Test.Temp.Location'),Environment('Temp'),parameter('TempLocation'))]",

@@ -19,7 +19,9 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.NodeJS": "[ValidateNotNull(GetPackage(Name:'Node.js',ErrorAction:'Continue'))]",
+    "Check.NodeJS": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.NodeJS'),ErrorAction:'Continue'))]",
+
+    "DisplayName.NodeJS": "Node.js",
 
     "NodeJS.SourceUri": "[if(variable('Check.Is64'),parameter('NodeJS64Download'),parameter('NodeJSDownload'))]",
     "NodeJS.Download": "[JoinPath(variable('Temp.Location'),'nodejs.msi')]",
@@ -67,6 +69,14 @@
         "Wait": true
       },
       "Skip": "[variable('Check.NodeJS')]"
+    },
+    "UpdateNpm": {
+      "Type": "StartProcess",
+      "Params": {
+        "FilePath": "npm.exe",
+        "ArgumentList": ["install", "-g", "npm"],
+        "Wait": true
+      }
     },
     "CleanArtifacts": {
       "Type": "RemoveItem",

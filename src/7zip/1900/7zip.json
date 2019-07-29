@@ -19,7 +19,9 @@
   },
   "Variables": {
     "Check.Is64": "[Eval('[System.Environment]::Is64BitOperatingSystem')]",
-    "Check.SevenZip": "[ValidateNotNull(GetPackage(Name:'7-Zip*',ErrorAction:'Continue'))]",
+    "Check.SevenZip": "[ValidateNotNull(GetPackage(Name:variable('DisplayName.SevenZip'),ErrorAction:'Continue'))]",
+
+    "DisplayName.SevenZip": "7-Zip*",
 
     "SevenZip.SourceUri": "[if(variable('Check.Is64'),parameter('SevenZip64Download'),parameter('SevenZipDownload'))]",
     "SevenZip.Download": "[JoinPath(variable('Temp.Location'),'7z.exe')]",
